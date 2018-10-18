@@ -55,7 +55,9 @@ func (f *FileSet) findShim(id string, be *gen.BaseElem) {
 
 func (f *FileSet) nextShim(ref *gen.Elem, id string, be *gen.BaseElem) {
 	if (*ref).TypeName() == id {
-		*ref = be
+		vn := (*ref).Varname()
+		*ref = be.Copy()
+		(*ref).SetVarname(vn)
 	} else {
 		switch el := (*ref).(type) {
 		case *gen.Struct:
@@ -117,10 +119,8 @@ func (f *FileSet) nextInline(ref *gen.Elem, root string) {
 					panic(fatalloop)
 				}
 
-				// inline bottom-up so as not to miss
-				// other inlining opportunities.
-				f.nextInline(&node, root)
 				*ref = node.Copy()
+				f.nextInline(ref, node.TypeName())
 			} else if !ok && !el.Resolved() {
 				// this is the point at which we're sure that
 				// we've got a type that isn't a primitive,

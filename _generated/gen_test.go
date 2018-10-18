@@ -56,6 +56,25 @@ func BenchmarkFastDecode(b *testing.B) {
 	}
 }
 
+func (a *TestType) Equal(b *TestType) bool {
+	// compare times, appended, then zero out those
+	// fields, perform a DeepEqual, and restore them
+	ta, tb := a.Time, b.Time
+	if !ta.Equal(tb) {
+		return false
+	}
+	aa, ab := a.Appended, b.Appended
+	if !bytes.Equal(aa, ab) {
+		return false
+	}
+	a.Time, b.Time = time.Time{}, time.Time{}
+	aa, ab = nil, nil
+	ok := reflect.DeepEqual(a, b)
+	a.Time, b.Time = ta, tb
+	a.Appended, b.Appended = aa, ab
+	return ok
+}
+
 // This covers the following cases:
 //  - Recursive types
 //  - Non-builtin identifiers (and recursive types)
@@ -80,7 +99,7 @@ func Test1EncodeDecode(t *testing.T) {
 		},
 		Child:    nil,
 		Time:     time.Now(),
-		Appended: msgp.Raw([]byte{0xc0}), // 'nil'
+		Appended: msgp.Raw([]byte{}), // 'nil'
 	}
 
 	var buf bytes.Buffer
@@ -97,7 +116,7 @@ func Test1EncodeDecode(t *testing.T) {
 		t.Error(err)
 	}
 
-	if !reflect.DeepEqual(tt, tnew) {
+	if !tt.Equal(tnew) {
 		t.Logf("in: %v", tt)
 		t.Logf("out: %v", tnew)
 		t.Fatal("objects not equal")
@@ -117,9 +136,21 @@ func Test1EncodeDecode(t *testing.T) {
 		t.Errorf("%d bytes left", len(left))
 	}
 
-	if !reflect.DeepEqual(tt, tanother) {
+	if !tt.Equal(tanother) {
 		t.Logf("in: %v", tt)
 		t.Logf("out: %v", tanother)
 		t.Fatal("objects not equal")
+	}
+}
+
+func TestIssue168(t *testing.T) {
+	buf := bytes.Buffer{}
+	test := TestObj{}
+
+	msgp.Encode(&buf, &TestObj{ID1: "1", ID2: "2"})
+	msgp.Decode(&buf, &test)
+
+	if test.ID1 != "1" || test.ID2 != "2" {
+		t.Fatalf("got back %+v", test)
 	}
 }

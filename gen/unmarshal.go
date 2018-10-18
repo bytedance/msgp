@@ -32,6 +32,10 @@ func (u *unmarshalGen) Execute(p Elem) error {
 	if !u.p.ok() {
 		return u.p.err
 	}
+	p = u.applyall(p)
+	if p == nil {
+		return nil
+	}
 	if !IsPrintable(p) {
 		return nil
 	}
@@ -128,12 +132,18 @@ func (u *unmarshalGen) gBase(b *BaseElem) {
 	default:
 		u.p.printf("\n%s, bts, err = msgp.Read%sBytes(bts)", refname, b.BaseName())
 	}
+	u.p.print(errcheck)
+
 	if b.Convert {
 		// close 'tmp' block
-		u.p.printf("\n%s = %s(%s)\n}", b.Varname(), b.FromBase(), refname)
+		if b.ShimMode == Cast {
+			u.p.printf("\n%s = %s(%s)\n", b.Varname(), b.FromBase(), refname)
+		} else {
+			u.p.printf("\n%s, err = %s(%s)", b.Varname(), b.FromBase(), refname)
+			u.p.print(errcheck)
+		}
+		u.p.printf("}")
 	}
-
-	u.p.print(errcheck)
 }
 
 func (u *unmarshalGen) gArray(a *Array) {
@@ -144,7 +154,7 @@ func (u *unmarshalGen) gArray(a *Array) {
 	// special case for [const]byte objects
 	// see decode.go for symmetry
 	if be, ok := a.Els.(*BaseElem); ok && be.Value == Byte {
-		u.p.printf("\nbts, err = msgp.ReadExactBytes(bts, %s[:])", a.Varname())
+		u.p.printf("\nbts, err = msgp.ReadExactBytes(bts, (%s)[:])", a.Varname())
 		u.p.print(errcheck)
 		return
 	}
@@ -152,7 +162,7 @@ func (u *unmarshalGen) gArray(a *Array) {
 	sz := randIdent()
 	u.p.declare(sz, u32)
 	u.assignAndCheck(sz, arrayHeader)
-	u.p.arrayCheck(a.Size, sz)
+	u.p.arrayCheck(coerceArraySize(a.Size), sz)
 	u.p.rangeBlock(a.Index, a.Varname(), u, a.Els)
 }
 

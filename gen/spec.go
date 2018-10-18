@@ -158,7 +158,14 @@ func (p *Printer) ApplyDirective(pass Method, t TransformPass) {
 // Print prints an Elem.
 func (p *Printer) Print(e Elem) error {
 	for _, g := range p.gens {
+		// Elem.SetVarname() is called before the Print() step in parse.FileSet.PrintTo().
+		// Elem.SetVarname() generates identifiers as it walks the Elem. This can cause
+		// collisions between idents created during SetVarname and idents created during Print,
+		// hence the separate prefixes.
+		resetIdent("zb")
 		err := g.Execute(e)
+		resetIdent("za")
+
 		if err != nil {
 			return err
 		}
@@ -287,10 +294,10 @@ func (p *printer) declare(name string, typ string) {
 
 // does:
 //
-// if m != nil && size > 0 {
+// if m == nil {
 //     m = make(type, size)
 // } else if len(m) > 0 {
-//     for key, _ := range m { delete(m, key) }
+//     for key := range m { delete(m, key) }
 // }
 //
 func (p *printer) resizeMap(size string, m *Map) {
@@ -298,7 +305,7 @@ func (p *printer) resizeMap(size string, m *Map) {
 	if !p.ok() {
 		return
 	}
-	p.printf("\nif %s == nil && %s > 0 {", vn, size)
+	p.printf("\nif %s == nil {", vn)
 	p.printf("\n%s = make(%s, %s)", vn, m.TypeName(), size)
 	p.printf("\n} else if len(%s) > 0 {", vn)
 	p.clearMap(vn)
@@ -315,11 +322,11 @@ func (p *printer) mapAssign(m *Map) {
 
 // clear map keys
 func (p *printer) clearMap(name string) {
-	p.printf("\nfor key, _ := range %[1]s { delete(%[1]s, key) }", name)
+	p.printf("\nfor key := range %[1]s { delete(%[1]s, key) }", name)
 }
 
 func (p *printer) resizeSlice(size string, s *Slice) {
-	p.printf("\nif cap(%[1]s) >= int(%[2]s) { %[1]s = %[1]s[:%[2]s] } else { %[1]s = make(%[3]s, %[2]s) }", s.Varname(), size, s.TypeName())
+	p.printf("\nif cap(%[1]s) >= int(%[2]s) { %[1]s = (%[1]s)[:%[2]s] } else { %[1]s = make(%[3]s, %[2]s) }", s.Varname(), size, s.TypeName())
 }
 
 func (p *printer) arrayCheck(want string, got string) {
