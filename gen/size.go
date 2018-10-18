@@ -191,8 +191,7 @@ func (s *sizeGen) gBase(b *BaseElem) {
 
 		// ensure we don't get "unused variable" warnings from outer slice iterations
 		s.p.printf("\n_ = %s", b.Varname())
-
-		s.p.printf("\ns += %s", basesizeExpr(b.Value, vname, b.BaseName()))
+		s.p.printf("\ns += %s", basesizeExpr(b.Value, vname, b.BaseName(), b.TypeName() == "msgp.Any"))
 		s.state = expr
 
 	} else {
@@ -200,7 +199,7 @@ func (s *sizeGen) gBase(b *BaseElem) {
 		if b.Convert {
 			vname = tobaseConvert(b)
 		}
-		s.addConstant(basesizeExpr(b.Value, vname, b.BaseName()))
+		s.addConstant(basesizeExpr(b.Value, vname, b.BaseName(), b.TypeName() == "msgp.Any"))
 	}
 }
 
@@ -268,13 +267,16 @@ func fixedsizeExpr(e Elem) (string, bool) {
 }
 
 // print size expression of a variable name
-func basesizeExpr(value Primitive, vname, basename string) string {
+func basesizeExpr(value Primitive, vname, basename string, isAny bool) string {
 	switch value {
 	case Ext:
 		return "msgp.ExtensionPrefixSize + " + stripRef(vname) + ".Len()"
 	case Intf:
 		return "msgp.GuessSize(" + vname + ")"
 	case IDENT:
+		if isAny {
+			return "msgp.Anysize(" + vname + ")"
+		}
 		return vname + ".Msgsize()"
 	case Bytes:
 		return "msgp.BytesPrefixSize + len(" + vname + ")"

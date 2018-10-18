@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/tinylib/msgp/msgp"
+	"github.com/henrylee2cn/msgp/msgp"
 )
 
 func marshal(w io.Writer) *marshalGen {
@@ -45,7 +45,11 @@ func (m *marshalGen) Execute(p Elem) error {
 	c := p.Varname()
 
 	m.p.printf("\nfunc (%s %s) MarshalMsg(b []byte) (o []byte, err error) {", p.Varname(), imutMethodReceiver(p))
-	m.p.printf("\no = msgp.Require(b, %s.Msgsize())", c)
+	if p.TypeName() == "msgp.Any" {
+		m.p.printf("\no = msgp.Require(b, %s.Msgsize()+1)", c)
+	} else {
+		m.p.printf("\no = msgp.Require(b, %s.Msgsize())", c)
+	}
 	next(m, p)
 	m.p.nakedReturn()
 	return m.p.err
@@ -198,7 +202,11 @@ func (m *marshalGen) gBase(b *BaseElem) {
 	switch b.Value {
 	case IDENT:
 		echeck = true
-		m.p.printf("\no, err = %s.MarshalMsg(o)", vname)
+		if b.TypeName() == "msgp.Any" {
+			m.p.printf("\no, err = msgp.MarshalAny(%s,o)", vname)
+		} else {
+			m.p.printf("\no, err = %s.MarshalMsg(o)", vname)
+		}
 	case Intf, Ext:
 		echeck = true
 		m.p.printf("\no, err = msgp.Append%s(o, %s)", b.BaseName(), vname)

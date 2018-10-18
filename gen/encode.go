@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/tinylib/msgp/msgp"
+	"github.com/henrylee2cn/msgp/msgp"
 )
 
 func encode(w io.Writer) *encodeGen {
@@ -190,7 +190,11 @@ func (e *encodeGen) gBase(b *BaseElem) {
 	}
 
 	if b.Value == IDENT { // unknown identity
-		e.p.printf("\nerr = %s.EncodeMsg(en)", vname)
+		if b.TypeName() == "msgp.Any" {
+			e.p.printf("\nerr = msgp.EncodeAny(%s,en)", vname)
+		} else {
+			e.p.printf("\nerr = %s.EncodeMsg(en)", vname)
+		}
 		e.p.print(errcheck)
 	} else { // typical case
 		e.writeAndCheck(b.BaseName(), literalFmt, vname)
