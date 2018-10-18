@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// Any support any structure pointer to implement this interface.
 type Any interface {
 	Marshaler
 	Unmarshaler
@@ -15,8 +16,8 @@ type Any interface {
 }
 
 var (
-	idToAnyType sync.Map // map[string]reflect.Type
-	anyTypeToId sync.Map // map[reflect.Type]string
+	idToAnyType sync.Map // map[byte]reflect.Type
+	anyTypeToId sync.Map // map[reflect.Type]byte
 )
 
 // RegisterAny records a type, identified by a value for that type, under its

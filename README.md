@@ -30,11 +30,19 @@ Field names can be set in much the same way as the `encoding/json` package. For 
 
 ```go
 type Person struct {
-	Name       string `msg:"name"`
-	Address    string `msg:"address"`
-	Age        int    `msg:"age"`
-	Hidden     string `msg:"-"` // this field is ignored
+	Name       string   `msg:"name"`
+	Address    string   `msg:"address"`
+	Age        int      `msg:"age"`
+	Other      msgp.Any `msg:"other"` // any structure pointer to implement msgp.Any interface
+	Hidden     string   `msg:"-"` // this field is ignored
 	unexported bool             // this field is also ignored
+}
+type Hobby struct{
+	Football bool `msg:"football"`
+}
+var Jim = &Person{
+	Name:  "Jim",
+	Other: &Hobby{Football: true},
 }
 ```
 
@@ -54,6 +62,7 @@ of `*bufio.Writer` and `*bufio.Reader`, respectively.)
  - JSON interoperability (see `msgp.CopyToJSON() and msgp.UnmarshalAsJSON()`)
  - Support for complex type declarations
  - Native support for Go's `time.Time`, `complex64`, and `complex128` types 
+ - Support any structure pointer to implement `msgp.Any` interface
  - Generation of both `[]byte`-oriented and `io.Reader/io.Writer`-oriented methods
  - Support for arbitrary type system extensions
  - [Preprocessor directives](http://github.com/henrylee2cn/msgp/wiki/Preprocessor-Directives)
