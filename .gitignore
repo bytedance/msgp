@@ -8,3 +8,4 @@ msgp/cover.out
 *.coverprofile
 *.zip
 *.exe
+.DS_Store
