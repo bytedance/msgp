@@ -15,6 +15,8 @@ type Any interface {
 	Sizer
 }
 
+const anyHeaderLen = 2
+
 var (
 	idToAnyType sync.Map // map[byte]reflect.Type
 	anyTypeToId sync.Map // map[reflect.Type]byte
@@ -26,8 +28,8 @@ var (
 // transferred as implementations of interface values need to be registered.
 // Expecting to be used only during initialization, it panics if the mapping
 // between types and ids is not a bijection.
-func RegisterAny(id byte, any Any) {
-	if id == 0 {
+func RegisterAny(namedID uint16, any Any) {
+	if namedID == 0 {
 		panic("attempt to register zero id")
 	}
 	if any == nil {
@@ -36,85 +38,75 @@ func RegisterAny(id byte, any Any) {
 
 	t := reflect.Indirect(reflect.ValueOf(any)).Type()
 
-	if nt, dup := idToAnyType.LoadOrStore(id, t); dup && nt != t {
-		panic(fmt.Sprintf("msgp: registering duplicate types for %d: %v != %v", id, nt, t))
+	if nt, dup := idToAnyType.LoadOrStore(namedID, t); dup && nt != t {
+		panic(fmt.Sprintf("msgp: registering duplicate types for %d: %v != %v", namedID, nt, t))
 	}
 
-	if nid, dup := anyTypeToId.LoadOrStore(t, id); dup && nid != id {
-		idToAnyType.Delete(id)
-		panic(fmt.Sprintf("msgp: registering duplicate ids for %v: %d != %d", t, nid, id))
+	if nid, dup := anyTypeToId.LoadOrStore(t, namedID); dup && nid != namedID {
+		idToAnyType.Delete(namedID)
+		panic(fmt.Sprintf("msgp: registering duplicate ids for %v: %d != %d", t, nid, namedID))
 	}
 }
 
+// EncodeAny encodes any struct pointer type.
 func EncodeAny(any Any, en *Writer) error {
-	if any == nil {
-		return en.WriteByte(0)
-	}
-	id, err := getAnyTypeId(any)
+	cnt, err := createAnyBytes(any)
 	if err != nil {
 		return err
 	}
-	err = en.WriteByte(id)
-	if err != nil {
-		return err
-	}
-	return any.EncodeMsg(en)
+	_, err = en.Write(AppendBytes(nil, cnt))
+	return err
 }
 
+// MarshalAny marshals any struct pointer type.
 func MarshalAny(any Any, o []byte) ([]byte, error) {
-	if any == nil {
-		return append(o, 0), nil
-	}
-	id, err := getAnyTypeId(any)
+	cnt, err := createAnyBytes(any)
 	if err != nil {
-		return o, err
+		return nil, err
 	}
-	return any.MarshalMsg(append(o, id))
+	o = AppendBytes(o, cnt)
+	return o, nil
 }
 
+var scratchPool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 512)
+	},
+}
+
+// DecodeAny decodes any struct pointer type.
 func DecodeAny(dc *Reader) (Any, error) {
-	id, err := dc.ReadByte()
+	scratch := scratchPool.Get().([]byte)
+	defer scratchPool.Put(scratch)
+	scratch, err := dc.ReadBytes(scratch)
 	if err != nil {
 		return nil, err
 	}
-	if id == 0 {
-		return nil, nil
-	}
-	any, err := newAnyType(id)
-	if err != nil {
-		return nil, err
-	}
-	err = any.DecodeMsg(dc)
-	if err != nil {
-		return nil, err
-	}
-	return any, nil
+	any, err := parseAnyBytes(scratch)
+	return any, err
 }
 
+// UnmarshalAny unmarshalls any struct pointer type.
 func UnmarshalAny(bts []byte) (Any, []byte, error) {
-	if len(bts) == 0 {
-		return nil, bts, nil
-	}
-	id := bts[0]
-	if id == 0 {
-		return nil, bts[1:], nil
-	}
-	any, err := newAnyType(id)
+	scratch := scratchPool.Get().([]byte)
+	defer func() { scratchPool.Put(scratch) }()
+	scratch, bts, err := ReadBytesBytes(bts, scratch)
 	if err != nil {
-		return nil, bts, err
+		return nil, nil, err
 	}
-	bts, err = any.UnmarshalMsg(bts[1:])
+	any, err := parseAnyBytes(scratch)
 	return any, bts, err
 }
 
+// Anysize returns the size of any struct pointer type.
 func Anysize(any Any) int {
 	if any == nil {
-		return 1
+		return anyHeaderLen
 	}
-	return any.Msgsize() + 1
+	return any.Msgsize() + anyHeaderLen
 }
 
-func newAnyType(id byte) (Any, error) {
+func newAnyType(id uint16) (Any, error) {
 	t, ok := idToAnyType.Load(id)
 	if !ok {
 		return nil, fmt.Errorf("not support type ID: %d", id)
@@ -126,11 +118,41 @@ func newAnyType(id byte) (Any, error) {
 	return any, nil
 }
 
-func getAnyTypeId(any Any) (byte, error) {
+func getAnyTypeId(any Any) (uint16, error) {
 	t := reflect.Indirect(reflect.ValueOf(any)).Type()
 	id, ok := anyTypeToId.Load(t)
 	if !ok {
-		return 0, fmt.Errorf("not support type ID: %d", id)
+		return 0, fmt.Errorf("not support type: %v", t)
 	}
-	return id.(byte), nil
+	return id.(uint16), nil
+}
+
+func createAnyBytes(any Any) ([]byte, error) {
+	if any == nil {
+		return nil, nil
+	}
+	id, err := getAnyTypeId(any)
+	if err != nil {
+		return nil, err
+	}
+	var tmp = make([]byte, anyHeaderLen)
+	big.PutUint16(tmp, id)
+	return any.MarshalMsg(tmp)
+}
+
+func parseAnyBytes(bts []byte) (Any, error) {
+	if len(bts) < anyHeaderLen {
+		return nil, nil
+	}
+	id := big.Uint16(bts)
+	bts = bts[anyHeaderLen:]
+	if id == 0 {
+		return nil, nil
+	}
+	any, err := newAnyType(id)
+	if err != nil {
+		return nil, err
+	}
+	_, err = any.UnmarshalMsg(bts)
+	return any, err
 }

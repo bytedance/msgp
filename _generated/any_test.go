@@ -33,12 +33,12 @@ func TestMarshalUnmarshalTable2(t *testing.T) {
 	}
 	b1, _ := json.Marshal(v1)
 	t.Logf("send table: %s", b1)
+
 	bts, err := v1.MarshalMsg(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	v2 := Table{}
-	// t.Logf("==============bts1:%s", string(bts))
 	left, err := v2.UnmarshalMsg(bts)
 	if err != nil {
 		t.Fatal(err)
@@ -48,14 +48,10 @@ func TestMarshalUnmarshalTable2(t *testing.T) {
 	}
 	b2, _ := json.Marshal(v2)
 	t.Logf("recv table: %s", b2)
-	// t.Logf("==============bts2:%s", string(bts))
 
-	left = bts
-	for i := 0; i < 11; i++ {
-		left, err = msgp.Skip(left)
-		if err != nil {
-			t.Fatal(err)
-		}
+	left, err = msgp.Skip(bts)
+	if err != nil {
+		t.Fatal(err)
 	}
 	if len(left) > 0 {
 		t.Errorf("%d bytes left over after Skip(): %q", len(left), left)

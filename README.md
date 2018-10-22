@@ -91,6 +91,10 @@ As long as the declarations of `MyInt` and `Data` are in the same file as `Struc
 MessagePack supports defining your own types through "extensions," which are just a tuple of
 the data "type" (`int8`) and the raw binary. You [can see a worked example in the wiki.](http://github.com/tinylib/msgp/wiki/Using-Extensions)
 
+#### Any
+
+MessagePack supports encoding and decoding any structure types via the type `msgp.Any` interface.
+
 ### Status
 
 Mostly stable, in that no breaking changes have been made to the `/msgp` library in more than a year. Newer versions
