@@ -58,6 +58,34 @@ func BenchmarkFastDecode(b *testing.B) {
 }
 
 func (a *TestType) Equal(b *TestType) bool {
+	if len(a.Els) != len(b.Els) {
+		return false
+	}
+	if len(a.RuneSlice) != len(b.RuneSlice) {
+		return false
+	}
+	if len(a.Slice1) != len(b.Slice1) {
+		return false
+	}
+	if len(a.Slice2) != len(b.Slice2) {
+		return false
+	}
+	e1a, e1b := a.Els, b.Els
+	ra, rb := a.RuneSlice, b.RuneSlice
+	s1a, s1b := a.Slice1, b.Slice1
+	s2a, s2b := a.Slice2, b.Slice2
+	if len(a.Els) == 0 {
+		a.Els, b.Els = nil, nil
+	}
+	if len(a.RuneSlice) == 0 {
+		a.RuneSlice, b.RuneSlice = nil, nil
+	}
+	if len(a.Slice1) == 0 {
+		a.Slice1, b.Slice1 = nil, nil
+	}
+	if len(a.Slice2) == 0 {
+		a.Slice2, b.Slice2 = nil, nil
+	}
 	// compare times, appended, then zero out those
 	// fields, perform a DeepEqual, and restore them
 	ta, tb := a.Time, b.Time
@@ -68,11 +96,16 @@ func (a *TestType) Equal(b *TestType) bool {
 	if !bytes.Equal(aa, ab) {
 		return false
 	}
+	a.Appended, b.Appended = nil, nil
 	a.Time, b.Time = time.Time{}, time.Time{}
-	aa, ab = nil, nil
 	ok := reflect.DeepEqual(a, b)
 	a.Time, b.Time = ta, tb
 	a.Appended, b.Appended = aa, ab
+	a.Els, b.Els = e1a, e1b
+	a.RuneSlice, b.RuneSlice = ra, rb
+	a.Slice1, b.Slice1 = s1a, s1b
+	a.Slice2, b.Slice2 = s2a, s2b
+
 	return ok
 }
 
@@ -85,6 +118,7 @@ func (a *TestType) Equal(b *TestType) bool {
 //
 func Test1EncodeDecode(t *testing.T) {
 	f := 32.00
+	s := []string{}
 	tt := &TestType{
 		F: &f,
 		Els: map[string]string{
@@ -100,7 +134,8 @@ func Test1EncodeDecode(t *testing.T) {
 		},
 		Child:    nil,
 		Time:     time.Now(),
-		Appended: msgp.Raw([]byte{}), // 'nil'
+		Appended: msgp.Raw([]byte{}), // '[]'
+		SlicePtr: &s,
 	}
 
 	var buf bytes.Buffer
@@ -118,8 +153,8 @@ func Test1EncodeDecode(t *testing.T) {
 	}
 
 	if !tt.Equal(tnew) {
-		t.Logf("in: %v", tt)
-		t.Logf("out: %v", tnew)
+		t.Logf("in: %#v", tt)
+		t.Logf("out: %#v", tnew)
 		t.Fatal("objects not equal")
 	}
 
