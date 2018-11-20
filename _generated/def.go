@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/henrylee2cn/msgp/msgp"
+	"github.com/bytedance/msgp/msgp"
 )
 
 //go:generate msgp -o generated.go

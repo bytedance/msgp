@@ -29,9 +29,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/henrylee2cn/msgp/gen"
-	"github.com/henrylee2cn/msgp/parse"
-	"github.com/henrylee2cn/msgp/printer"
+	"github.com/bytedance/msgp/gen"
+	"github.com/bytedance/msgp/parse"
+	"github.com/bytedance/msgp/printer"
 	"github.com/ttacon/chalk"
 )
 
