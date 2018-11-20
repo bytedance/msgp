@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"github.com/bytedance/msgp/gen"
+	"github.com/henrylee2cn/msgp/gen"
 )
 
 // This file defines when and how we

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/bytedance/msgp/msgp"
+	"github.com/henrylee2cn/msgp/msgp"
 )
 
 func TestEncodeE1DecodeE2(t *testing.T) {

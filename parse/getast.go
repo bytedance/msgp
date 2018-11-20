@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bytedance/msgp/gen"
+	"github.com/henrylee2cn/msgp/gen"
 	"github.com/ttacon/chalk"
 )
 

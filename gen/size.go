@@ -5,7 +5,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/bytedance/msgp/msgp"
+	"github.com/henrylee2cn/msgp/msgp"
 )
 
 type sizeState uint8

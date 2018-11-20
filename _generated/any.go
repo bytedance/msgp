@@ -1,6 +1,6 @@
 package _generated
 
-import "github.com/bytedance/msgp/msgp"
+import "github.com/henrylee2cn/msgp/msgp"
 
 //go:generate msgp
 
