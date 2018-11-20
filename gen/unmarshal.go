@@ -1,8 +1,10 @@
 package gen
 
 import (
+	"fmt"
 	"io"
 	"strconv"
+	"strings"
 )
 
 func unmarshal(w io.Writer) *unmarshalGen {
@@ -96,15 +98,36 @@ func (u *unmarshalGen) mapstruct(s *Struct) {
 	u.p.printf("\n%s--; field, bts, err = msgp.ReadMapKeyZC(bts)", sz)
 	u.p.print(errcheck)
 	u.p.print("\nswitch msgp.UnsafeString(field) {")
+	var embeddedCode string
 	for i := range s.Fields {
 		if !u.p.ok() {
 			return
 		}
 		u.p.printf("\ncase \"%s\":", s.Fields[i].FieldTag)
 		next(u, s.Fields[i].FieldElem)
+		if s.Fields[i].Embedded {
+			// vname := s.Fields[i].FieldElem.Varname()
+			// vElemType := strings.TrimLeft(s.Fields[i].FieldElem.TypeName(), "*")
+			// embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
+			// embeddedCode += fmt.Sprintf("\n_,err=%s.UnmarshalMsg(_b)", vname)
+			// embeddedCode += "\nif err==nil {\nbreak\n}"
+			vname := s.Fields[i].FieldElem.Varname()
+			vElemType := strings.TrimLeft(s.Fields[i].FieldElem.TypeName(), "*")
+			embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
+			embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r," + vname + ")"
+			embeddedCode += "\nif err==nil {\nbreak\n}"
+		}
 	}
-	u.p.print("\ndefault:\nbts, err = msgp.Skip(bts)")
-	u.p.print(errcheck)
+	if embeddedCode != "" {
+		embeddedCode = "\ndefault:\nvar _b []byte\n_b, bts, err = msgp.InterceptField(field,bts)" +
+			errcheck +
+			"\nvar _r = bytes.NewReader(nil)" +
+			embeddedCode
+		u.p.print(embeddedCode)
+	} else {
+		u.p.print("\ndefault:\nbts, err = msgp.Skip(bts)")
+		u.p.print(errcheck)
+	}
 	u.p.print("\n}\n}") // close switch and for loop
 }
 

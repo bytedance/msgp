@@ -70,7 +70,8 @@ of `*bufio.Writer` and `*bufio.Reader`, respectively.)
  - Generation of both `[]byte`-oriented and `io.Reader/io.Writer`-oriented methods
  - Support for arbitrary type system extensions
  - [Preprocessor directives](http://github.com/tinylib/msgp/wiki/Preprocessor-Directives)
- - File-based dependency model means fast codegen regardless of source tree size.
+ - File-based dependency model means fast codegen regardless of source tree size
+ - Support for unmarshaling to anonymous fields
 
 Consider the following:
 ```go
@@ -94,6 +95,34 @@ the data "type" (`int8`) and the raw binary. You [can see a worked example in th
 #### Any
 
 MessagePack supports encoding and decoding any structure types via the type `msgp.Any` interface.
+[example](_generated/any_test.go)
+
+#### Anonymous Field
+
+```go
+type E1 struct {
+	A string
+	B string
+}
+
+type E2 struct {
+	A string
+	*F
+	*G
+}
+
+type F struct {
+	B string
+}
+
+type G struct {
+}
+```
+
+Support for unmarshalling from E1 to E2.
+
+[example](_generated/embedded_test.go)
+
 
 ### Status
 

@@ -406,6 +406,7 @@ type StructField struct {
 	RawTag    string // the full struct tag
 	FieldName string // the name of the struct field
 	FieldElem Elem   // the field type
+	Embedded  bool   // anonymous field
 }
 
 type ShimMode int

@@ -1,8 +1,10 @@
 package gen
 
 import (
+	"fmt"
 	"io"
 	"strconv"
+	"strings"
 )
 
 func decode(w io.Writer) *decodeGen {
@@ -95,15 +97,31 @@ func (d *decodeGen) structAsMap(s *Struct) {
 	d.p.printf("\nfor %s > 0 {\n%s--", sz, sz)
 	d.assignAndCheck("field", mapKey)
 	d.p.print("\nswitch msgp.UnsafeString(field) {")
+	var embeddedCode string
 	for i := range s.Fields {
 		d.p.printf("\ncase \"%s\":", s.Fields[i].FieldTag)
 		next(d, s.Fields[i].FieldElem)
 		if !d.p.ok() {
 			return
 		}
+		if s.Fields[i].Embedded {
+			vname := s.Fields[i].FieldElem.Varname()
+			vElemType := strings.TrimLeft(s.Fields[i].FieldElem.TypeName(), "*")
+			embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
+			embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r," + vname + ")"
+			embeddedCode += "\nif err==nil {\nbreak\n}"
+		}
 	}
-	d.p.print("\ndefault:\nerr = dc.Skip()")
-	d.p.print(errcheck)
+	if embeddedCode != "" {
+		embeddedCode = "\ndefault:\nvar _b []byte\n_b, err = dc.InterceptField(field)" +
+			errcheck +
+			"\nvar _r = bytes.NewReader(nil)" +
+			embeddedCode
+		d.p.print(embeddedCode)
+	} else {
+		d.p.print("\ndefault:\nerr = dc.Skip()")
+		d.p.print(errcheck)
+	}
 	d.p.closeblock() // close switch
 	d.p.closeblock() // close for loop
 }

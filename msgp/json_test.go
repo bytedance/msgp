@@ -24,6 +24,7 @@ func TestCopyJSON(t *testing.T) {
 
 	enc.WriteString("some bytes")
 	enc.WriteBytes([]byte("here are some bytes"))
+
 	enc.WriteString("a bool")
 	enc.WriteBool(true)
 

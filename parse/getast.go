@@ -361,6 +361,7 @@ func (fs *FileSet) getField(f *ast.Field) []gen.StructField {
 	// parse field name
 	switch len(f.Names) {
 	case 0:
+		sf[0].Embedded = true
 		sf[0].FieldName = embedded(f.Type)
 	case 1:
 		sf[0].FieldName = f.Names[0].Name
