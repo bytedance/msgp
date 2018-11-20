@@ -99,7 +99,7 @@ func (f *FileSet) propInline() {
 }
 
 const fatalloop = `detected infinite recursion in inlining loop!
-Please file a bug at github.com/tinylib/msgp/issues!
+Please file a bug at github.com/henrylee2cn/msgp/issues!
 Thanks!
 `
 
