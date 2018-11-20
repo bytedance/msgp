@@ -109,7 +109,7 @@ func (d *decodeGen) structAsMap(s *Struct) {
 			vElemType := strings.TrimLeft(s.Fields[i].FieldElem.TypeName(), "*")
 			embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
 			embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r," + vname + ")"
-			embeddedCode += "\nif err==nil {\nbreak\n}"
+			embeddedCode += errcheck
 		}
 	}
 	if embeddedCode != "" {

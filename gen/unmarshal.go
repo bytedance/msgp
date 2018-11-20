@@ -106,16 +106,11 @@ func (u *unmarshalGen) mapstruct(s *Struct) {
 		u.p.printf("\ncase \"%s\":", s.Fields[i].FieldTag)
 		next(u, s.Fields[i].FieldElem)
 		if s.Fields[i].Embedded {
-			// vname := s.Fields[i].FieldElem.Varname()
-			// vElemType := strings.TrimLeft(s.Fields[i].FieldElem.TypeName(), "*")
-			// embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
-			// embeddedCode += fmt.Sprintf("\n_,err=%s.UnmarshalMsg(_b)", vname)
-			// embeddedCode += "\nif err==nil {\nbreak\n}"
 			vname := s.Fields[i].FieldElem.Varname()
 			vElemType := strings.TrimLeft(s.Fields[i].FieldElem.TypeName(), "*")
 			embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
 			embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r," + vname + ")"
-			embeddedCode += "\nif err==nil {\nbreak\n}"
+			embeddedCode += errcheck
 		}
 	}
 	if embeddedCode != "" {
