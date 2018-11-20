@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/henrylee2cn/msgp/msgp"
+	"github.com/bytedance/msgp/msgp"
 )
 
 //go:generate msgp -o generated.go
@@ -247,7 +247,7 @@ type ArrayConstants struct {
 }
 
 // Ensure non-msg struct tags work:
-// https://github.com/henrylee2cn/msgp/issues/201
+// https://github.com/bytedance/msgp/issues/201
 
 type NonMsgStructTags struct {
 	A      []string `json:"fooJSON" msg:"fooMsgp"`

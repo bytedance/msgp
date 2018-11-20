@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"github.com/henrylee2cn/msgp/gen"
+	"github.com/bytedance/msgp/gen"
 )
 
 // This file defines when and how we
@@ -99,7 +99,7 @@ func (f *FileSet) propInline() {
 }
 
 const fatalloop = `detected infinite recursion in inlining loop!
-Please file a bug at github.com/henrylee2cn/msgp/issues!
+Please file a bug at github.com/bytedance/msgp/issues!
 Thanks!
 `
 

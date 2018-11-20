@@ -18,7 +18,7 @@
 //  -marshal = satisfy the `msgp.Marshaler` and `msgp.Unmarshaler` interfaces (default is true)
 //  -tests = generate tests and benchmarks (default is true)
 //
-// For more information, please read README.md, and the wiki at github.com/henrylee2cn/msgp
+// For more information, please read README.md, and the wiki at github.com/bytedance/msgp
 //
 package main
 
@@ -29,9 +29,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/henrylee2cn/msgp/gen"
-	"github.com/henrylee2cn/msgp/parse"
-	"github.com/henrylee2cn/msgp/printer"
+	"github.com/bytedance/msgp/gen"
+	"github.com/bytedance/msgp/parse"
+	"github.com/bytedance/msgp/printer"
 	"github.com/ttacon/chalk"
 )
 
