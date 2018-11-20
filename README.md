@@ -1,4 +1,4 @@
-MessagePack Code Generator [![Build Status](https://travis-ci.org/henrylee2cn/msgp.svg?branch=master)](https://travis-ci.org/henrylee2cn/msgp)
+MessagePack Code Generator [![Build Status](https://travis-ci.org/bytedance/msgp.svg?branch=master)](https://travis-ci.org/bytedance/msgp)
 =======
 
 This is a code generation tool and serialization library for [MessagePack](http://msgpack.org). You can read more about MessagePack [in the wiki](http://github.com/tinylib/msgp/wiki), or at [msgpack.org](http://msgpack.org).
@@ -7,7 +7,7 @@ This is a code generation tool and serialization library for [MessagePack](http:
 
 - Use Go as your schema language
 - Performance
-- [JSON interop](http://godoc.org/github.com/henrylee2cn/msgp/msgp#CopyToJSON)
+- [JSON interop](http://godoc.org/github.com/bytedance/msgp/msgp#CopyToJSON)
 - [User-defined extensions](http://github.com/tinylib/msgp/wiki/Using-Extensions)
 - Type safety
 - Encoding flexibility
