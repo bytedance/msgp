@@ -1,4 +1,4 @@
-package msgp_test
+package msgp
 
 //go:generate msgp -o=defgen_test.go -tests=false
 

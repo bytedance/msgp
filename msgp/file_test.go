@@ -1,6 +1,6 @@
 // +build linux darwin dragonfly freebsd netbsd openbsd
 
-package msgp_test
+package msgp
 
 import (
 	"bytes"
@@ -8,22 +8,20 @@ import (
 	prand "math/rand"
 	"os"
 	"testing"
-
-	"github.com/henrylee2cn/msgp/msgp"
 )
 
 type rawBytes []byte
 
 func (r rawBytes) MarshalMsg(b []byte) ([]byte, error) {
-	return msgp.AppendBytes(b, []byte(r)), nil
+	return AppendBytes(b, []byte(r)), nil
 }
 
 func (r rawBytes) Msgsize() int {
-	return msgp.BytesPrefixSize + len(r)
+	return BytesPrefixSize + len(r)
 }
 
 func (r *rawBytes) UnmarshalMsg(b []byte) ([]byte, error) {
-	tmp, out, err := msgp.ReadBytesBytes(b, (*(*[]byte)(r))[:0])
+	tmp, out, err := ReadBytesBytes(b, (*(*[]byte)(r))[:0])
 	*r = rawBytes(tmp)
 	return out, err
 }
@@ -43,14 +41,14 @@ func TestReadWriteFile(t *testing.T) {
 	data := make([]byte, 1024*1024)
 	rand.Read(data)
 
-	err = msgp.WriteFile(rawBytes(data), f)
+	err = WriteFile(rawBytes(data), f)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var out rawBytes
 	f.Seek(0, os.SEEK_SET)
-	err = msgp.ReadFile(&out, f)
+	err = ReadFile(&out, f)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -93,11 +91,11 @@ func BenchmarkWriteReadFile(b *testing.B) {
 
 	b.SetBytes(int64(data.Msgsize() / b.N))
 	b.ResetTimer()
-	err = msgp.WriteFile(data, f)
+	err = WriteFile(data, f)
 	if err != nil {
 		b.Fatal(err)
 	}
-	err = msgp.ReadFile(&data, f)
+	err = ReadFile(&data, f)
 	if err != nil {
 		b.Fatal(err)
 	}

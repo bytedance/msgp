@@ -1,0 +1,37 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "8U5pEHFpXd1/Klgp+C/a6TqWoh8=",
+			"path": "github.com/philhofer/fwd",
+			"revision": "bb6d471dc95d4fe11e432687f8b70ff496cf3136",
+			"revisionTime": "2017-09-05T21:21:22Z"
+		},
+		{
+			"checksumSHA1": "spJ1eXh+9C2lgTjm7ErpjQ8PaXw=",
+			"path": "github.com/ttacon/chalk",
+			"revision": "22c06c80ed312dcb6e1cf394f9634aa2c4676e22",
+			"revisionTime": "2016-06-26T20:24:18Z"
+		},
+		{
+			"checksumSHA1": "4Im9wKzWtIB9dgTZv34B9YIpzak=",
+			"path": "golang.org/x/tools/go/ast/astutil",
+			"revision": "1f849cf54d09e106002f24257b1cf8b31780c97a",
+			"revisionTime": "2018-10-11T03:16:23Z"
+		},
+		{
+			"checksumSHA1": "LISAWLsNoSc2j43szr+/7EMQuJM=",
+			"path": "golang.org/x/tools/imports",
+			"revision": "1f849cf54d09e106002f24257b1cf8b31780c97a",
+			"revisionTime": "2018-10-11T03:16:23Z"
+		},
+		{
+			"checksumSHA1": "raf03aN7Im1I492XC3DafXo0KsQ=",
+			"path": "golang.org/x/tools/internal/fastwalk",
+			"revision": "1f849cf54d09e106002f24257b1cf8b31780c97a",
+			"revisionTime": "2018-10-11T03:16:23Z"
+		}
+	],
+	"rootPath": "github.com/henrylee2cn/msgp"
+}
