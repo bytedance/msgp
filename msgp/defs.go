@@ -20,7 +20,7 @@
 // an explicit de-serialization step.
 //
 // For additional tips, tricks, and gotchas, please visit
-// the wiki at http://github.com/bytedance/msgp
+// the wiki at http://github.com/tinylib/msgp
 package msgp
 
 const last4 = 0x0f

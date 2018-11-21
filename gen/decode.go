@@ -106,9 +106,14 @@ func (d *decodeGen) structAsMap(s *Struct) {
 		}
 		if s.Fields[i].Embedded {
 			vname := s.Fields[i].FieldElem.Varname()
-			vElemType := strings.TrimLeft(s.Fields[i].FieldElem.TypeName(), "*")
-			embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
-			embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r," + vname + ")"
+			vType := s.Fields[i].FieldElem.TypeName()
+			vElemType := strings.TrimLeft(vType, "*")
+			if vType != vElemType {
+				embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
+				embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r," + vname + ")"
+			} else {
+				embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r,&" + vname + ")"
+			}
 			embeddedCode += errcheck
 		}
 	}

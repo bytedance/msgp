@@ -18,4 +18,5 @@ type F struct {
 }
 
 type G struct {
+	F
 }

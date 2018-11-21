@@ -25,7 +25,7 @@ func TestEncodeE1DecodeE2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !(vn.A == "a" && vn.F.B == "b") {
+	if !(vn.A == "a" && vn.F.B == "b" && vn.G.F.B == "b") {
 		t.Fail()
 	}
 	buf.Reset()
@@ -50,7 +50,7 @@ func TestMarshalE1UnmarshalE2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !(vn.A == "a" && vn.F.B == "b") {
+	if !(vn.A == "a" && vn.F.B == "b" && vn.G.F.B == "b") {
 		t.Fail()
 	}
 	if len(left) > 0 {
