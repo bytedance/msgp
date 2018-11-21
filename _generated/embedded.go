@@ -1,16 +1,22 @@
 package _generated
 
+import "github.com/bytedance/msgp/msgp"
+
 //go:generate msgp
 
 type E1 struct {
-	A string
-	B string
+	A  string
+	B  string
+	H1 []string
+	H2 []string
+	J  msgp.Any
 }
 
 type E2 struct {
+	G
 	A string
 	*F
-	*G
+	J msgp.Any
 }
 
 type F struct {
@@ -19,4 +25,6 @@ type F struct {
 
 type G struct {
 	F
+	H1 []string
+	H2 []string
 }

@@ -1,22 +1,16 @@
 package msgp
 
-import (
-	"bytes"
-)
-
 // InterceptField intercept the next object bytes with field.
 func (m *Reader) InterceptField(field []byte) (object []byte, err error) {
 	b, err := m.next()
 	if err != nil {
 		return
 	}
-	var buf = bytes.NewBuffer(nil)
-	var enc = NewWriter(buf)
-	enc.WriteMapHeader(1)
-	enc.WriteBytes(field)
-	enc.Write(b)
-	enc.Flush()
-	return buf.Bytes(), nil
+	object = make([]byte, 0, len(b)+32)
+	object = AppendMapHeader(object, 1)
+	object = AppendString(object, UnsafeString(field))
+	object = append(object, b...)
+	return object, nil
 }
 
 func (m *Reader) next() (b []byte, err error) {
@@ -65,37 +59,13 @@ func (m *Reader) next() (b []byte, err error) {
 
 // InterceptField intercept the next object bytes with field.
 func InterceptField(field []byte, b []byte) (object, last []byte, err error) {
-	object, last, err = next(b)
+	last, err = Skip(b)
 	if err != nil {
 		return
 	}
-	var buf = bytes.NewBuffer(nil)
-	var enc = NewWriter(buf)
-	enc.WriteMapHeader(1)
-	enc.WriteBytes(field)
-	enc.Write(object)
-	enc.Flush()
-	return buf.Bytes(), last, nil
-}
-
-func next(b []byte) (object, last []byte, err error) {
-	sz, asz, err := getSize(b)
-	if err != nil {
-		return object, b, err
-	}
-	if uintptr(len(b)) < sz {
-		return object, b, ErrShortBytes
-	}
-	object = b[:sz]
-	last = b[sz:]
-	var obj []byte
-	for asz > 0 {
-		obj, last, err = next(last)
-		if err != nil {
-			return object, last, err
-		}
-		object = append(object, obj...)
-		asz--
-	}
+	object = make([]byte, 0, len(b)+32)
+	object = AppendMapHeader(object, 1)
+	object = AppendString(object, UnsafeString(field))
+	object = append(object, b[:len(b)-len(last)]...)
 	return object, last, nil
 }

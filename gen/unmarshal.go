@@ -111,17 +111,14 @@ func (u *unmarshalGen) mapstruct(s *Struct) {
 			vElemType := strings.TrimLeft(vType, "*")
 			if vType != vElemType {
 				embeddedCode += fmt.Sprintf("\nif %s == nil { %s = new(%s); }", vname, vname, vElemType)
-				embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r," + vname + ")"
-			} else {
-				embeddedCode += "\n_r.Reset(_b)\nerr=msgp.Decode(_r,&" + vname + ")"
 			}
+			embeddedCode += "\n_,err=" + vname + ".UnmarshalMsg(_b)"
 			embeddedCode += errcheck
 		}
 	}
 	if embeddedCode != "" {
 		embeddedCode = "\ndefault:\nvar _b []byte\n_b, bts, err = msgp.InterceptField(field,bts)" +
 			errcheck +
-			"\nvar _r = bytes.NewReader(nil)" +
 			embeddedCode
 		u.p.print(embeddedCode)
 	} else {

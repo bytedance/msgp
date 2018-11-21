@@ -9,8 +9,11 @@ import (
 
 func TestEncodeE1DecodeE2(t *testing.T) {
 	v := E1{
-		A: "a",
-		B: "b",
+		H1: []string{"h1"},
+		A:  "a",
+		H2: []string{"h2"},
+		J:  &GridView{"0000"},
+		B:  "b",
 	}
 	var buf bytes.Buffer
 	msgp.Encode(&buf, &v)
@@ -25,7 +28,10 @@ func TestEncodeE1DecodeE2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !(vn.A == "a" && vn.F.B == "b" && vn.G.F.B == "b") {
+	if !(vn.A == "a" &&
+		vn.F.B == "b" && vn.G.F.B == "b" &&
+		vn.G.H1[0] == "h1" && vn.G.H2[0] == "h2" &&
+		vn.J.(*GridView).TestField == "0000") {
 		t.Fail()
 	}
 	buf.Reset()
@@ -38,8 +44,11 @@ func TestEncodeE1DecodeE2(t *testing.T) {
 
 func TestMarshalE1UnmarshalE2(t *testing.T) {
 	v := E1{
-		A: "a",
-		B: "b",
+		H1: []string{"h1"},
+		A:  "a",
+		H2: []string{"h2"},
+		J:  &GridView{"0000"},
+		B:  "b",
 	}
 	bts, err := v.MarshalMsg(nil)
 	if err != nil {
@@ -50,7 +59,10 @@ func TestMarshalE1UnmarshalE2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !(vn.A == "a" && vn.F.B == "b" && vn.G.F.B == "b") {
+	if !(vn.A == "a" &&
+		vn.F.B == "b" && vn.G.F.B == "b" &&
+		vn.G.H1[0] == "h1" && vn.G.H2[0] == "h2" &&
+		vn.J.(*GridView).TestField == "0000") {
 		t.Fail()
 	}
 	if len(left) > 0 {
