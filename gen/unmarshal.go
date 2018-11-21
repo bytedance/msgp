@@ -105,7 +105,7 @@ func (u *unmarshalGen) mapstruct(s *Struct) {
 		}
 		u.p.printf("\ncase \"%s\":", s.Fields[i].FieldTag)
 		next(u, s.Fields[i].FieldElem)
-		if s.Fields[i].Embedded {
+		if s.Fields[i].Expandable {
 			vname := s.Fields[i].FieldElem.Varname()
 			vType := s.Fields[i].FieldElem.TypeName()
 			vElemType := strings.TrimLeft(vType, "*")

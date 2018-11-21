@@ -104,7 +104,7 @@ func (d *decodeGen) structAsMap(s *Struct) {
 		if !d.p.ok() {
 			return
 		}
-		if s.Fields[i].Embedded {
+		if s.Fields[i].Expandable {
 			vname := s.Fields[i].FieldElem.Varname()
 			vType := s.Fields[i].FieldElem.TypeName()
 			vElemType := strings.TrimLeft(vType, "*")

@@ -402,11 +402,11 @@ func (s *Struct) Complexity() int {
 }
 
 type StructField struct {
-	FieldTag  string // the string inside the `msg:""` tag
-	RawTag    string // the full struct tag
-	FieldName string // the name of the struct field
-	FieldElem Elem   // the field type
-	Embedded  bool   // anonymous field
+	FieldTag   string // the string inside the `msg:""` tag
+	RawTag     string // the full struct tag
+	FieldName  string // the name of the struct field
+	FieldElem  Elem   // the field type
+	Expandable bool   // expandable anonymous field
 }
 
 type ShimMode int

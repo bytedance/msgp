@@ -17,11 +17,12 @@ import (
 // A FileSet is the in-memory representation of a
 // parsed file.
 type FileSet struct {
-	Package    string              // package name
-	Specs      map[string]ast.Expr // type specs in file
-	Identities map[string]gen.Elem // processed from specs
-	Directives []string            // raw preprocessor directives
-	Imports    []*ast.ImportSpec   // imports
+	Package     string              // package name
+	Specs       map[string]ast.Expr // type specs in file
+	StructSpecs map[string]ast.Expr
+	Identities  map[string]gen.Elem // processed from specs
+	Directives  []string            // raw preprocessor directives
+	Imports     []*ast.ImportSpec   // imports
 }
 
 // File parses a file at the relative path
@@ -34,8 +35,9 @@ func File(name string, unexported bool) (*FileSet, error) {
 	pushstate(name)
 	defer popstate()
 	fs := &FileSet{
-		Specs:      make(map[string]ast.Expr),
-		Identities: make(map[string]gen.Elem),
+		Specs:       make(map[string]ast.Expr),
+		StructSpecs: make(map[string]ast.Expr),
+		Identities:  make(map[string]gen.Elem),
 	}
 
 	fset := token.NewFileSet()
@@ -285,16 +287,17 @@ func (fs *FileSet) getTypeSpecs(f *ast.File) {
 				// for ast.TypeSpecs....
 				if ts, ok := s.(*ast.TypeSpec); ok {
 					switch ts.Type.(type) {
+					case *ast.StructType:
+						fs.StructSpecs[ts.Name.Name] = ts.Type
+						fs.Specs[ts.Name.Name] = ts.Type
 
 					// this is the list of parse-able
 					// type specs
-					case *ast.StructType,
-						*ast.ArrayType,
+					case *ast.ArrayType,
 						*ast.StarExpr,
 						*ast.MapType,
 						*ast.Ident:
 						fs.Specs[ts.Name.Name] = ts.Type
-
 					}
 				}
 			}
@@ -361,8 +364,10 @@ func (fs *FileSet) getField(f *ast.Field) []gen.StructField {
 	// parse field name
 	switch len(f.Names) {
 	case 0:
-		sf[0].Embedded = true
 		sf[0].FieldName = embedded(f.Type)
+		if _, ok := fs.StructSpecs[sf[0].FieldName]; ok {
+			sf[0].Expandable = true
+		}
 	case 1:
 		sf[0].FieldName = f.Names[0].Name
 	default:
