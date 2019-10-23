@@ -35,6 +35,10 @@ import (
 	"github.com/ttacon/chalk"
 )
 
+const (
+	version = "v1.0.0-bytedance"
+)
+
 var (
 	out        = flag.String("o", "", "output file")
 	file       = flag.String("file", "", "input file")
@@ -45,6 +49,10 @@ var (
 )
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s %s:\n", os.Args[0], version)
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 
 	// GOFILE is set by go generate
